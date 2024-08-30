@@ -1,5 +1,5 @@
 const { response } = require('express')
-const Blog = require('../models/article.model.js')
+const Blog = require('../models/article.js')
 
 const createBlog = async (req, res, next) => {
     try {

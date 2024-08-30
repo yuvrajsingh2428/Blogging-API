@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const {readingTime } = require('../utils/utils')
+const {readingTime } = require('../utils/readingTime.js')
 
 const articleSchema = new mongoose.Schema(
     {

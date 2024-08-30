@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const User = require('../models/user.model.js')
+const User = require('../models/user.js')
 const jwt = require('jsonwebtoken')
 const { SECRET } = require('../config/config.js')
 

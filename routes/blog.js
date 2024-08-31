@@ -10,20 +10,23 @@ const {
 const {
     filterAndSort, 
     filterByPublished, 
-    list, setUserFilter 
+    list, 
+    setUserFilter, 
     } = require('../middlewares/APIfeature.middleware.js')
 
-const getUserFromToken = require('../middlewares/verifyUser.js')
+    // Using this for session-based auth
+const isAuthenticated = require('../middlewares/isAuthenticated.js')  // Middleware
 
 const pagination = require('../middlewares/pagination.js')
 
 router.route('/')
-.get(filterAndSort, filterByPublished, pagination, list, getBlogs)
-.post(getUserFromToken, createBlog)
+    .post(isAuthenticated, createBlog)  // Ensure isAuthenticated is used here
+    .get(filterAndSort, filterByPublished, pagination, list, getBlogs)
+ 
 
 router.route('/p')
-.get(getUserFromToken, filterAndSort, setUserFilter, pagination, getBlogs)
+    .get( isAuthenticated, filterAndSort, setUserFilter, pagination, getBlogs)
 
-router.route('/:id').get(getBlog)
+router.route('/:id').get(getBlog) // Ensure isAuthenticated is used here
 
 module.exports = router

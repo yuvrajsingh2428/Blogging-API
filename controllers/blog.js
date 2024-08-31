@@ -3,8 +3,20 @@ const Blog = require('../models/article.js')
 
 const createBlog = async (req, res, next) => {
     try {
+        // Debug log to check if req.user is available
+        console.log('req.user:', req.user);
+
+        // Check if req.user is defined
+        if (!req.user || !req.user._id) {
+            console.log('req.user is undefined:', req.user); // Debug log
+            throw new Error('User not authenticated');
+        }
+        
         //grab details from request
         const { title, description, tags, body } = req.body
+
+        // Ensure tags is an array; default to empty array if not provided
+        const normalizedTags = Array.isArray(tags) ? tags : [];
 
         // create blog object
         const newBlog = new Blog({
@@ -13,10 +25,15 @@ const createBlog = async (req, res, next) => {
             tags,
             author: req.user._id,
             body,
-            owner: req.user.username,
+            owner: req.user.username, // Assuming `owner` is a username
         })
         // Save to database 
         const createBlog = await newBlog.save()
+
+        // Initialize articles array if undefined
+        if (!req.user.articles) {
+            req.user.articles = [];
+        }
 
         // save blog ID to user document
         req.user.articles = req.user.articles.concat(createBlog._id)

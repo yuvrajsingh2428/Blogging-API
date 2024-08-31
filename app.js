@@ -47,7 +47,7 @@ const connectDB = async () => {
 connectDB();
 
 // Define routes
-app.use('api/signup', createUser)
+app.use('/api/signup', createUser)
 app.use('/api/login', loginUser)
 app.use('/api/blog', blog);
 app.use('/api/', userRoutes)

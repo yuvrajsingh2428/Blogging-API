@@ -18,6 +18,7 @@ const loginUser = async (req, res, next) => {
                 message:'Username/ password is incorrect',
             })
         }
+        
         // Create a session
         req.session.userId = user._id;
         req.session.username = user.username;
@@ -34,7 +35,6 @@ const loginUser = async (req, res, next) => {
         next(e)
     }
 }
-
 
 module.exports = {
     loginUser

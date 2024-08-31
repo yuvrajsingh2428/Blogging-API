@@ -31,10 +31,10 @@ const UserSchema = new mongoose.Schema(
             type: String,
             required: [true, "Password is Required"]
         },
-        article:{
+        article:[{
             type: mongoose.Schema.Types.ObjectId,
             ref: "Article"
-        }
+        }]
 
     },
     {

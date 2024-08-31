@@ -1,31 +1,25 @@
 
 const User = require('../models/user.js')
 
-const jwt = require('jsonwebtoken')
-
 module.exports = async(req, res, next) => {
     try {
-        // get bearer token from header
-        const authorization = req.get('authorization')
-
-        if(!(authorization && authorization.toLowerCase().startsWith('bearer'))){
-            throw new Error()
-        }
-        const bearerToken = authorization.substring(7)
-
-        // decode bearer token
-        const userFromToken = jwt.verify(bearerToken, process.env.SECRET)
-        const user = await User.findById(userFromToken)
-        if(!user){
-            throw new Error()
+        // Check if user is authenticated using session
+        if (!req.session.userId) {
+            return res.status(401).json({ message: 'Not authenticated' });
         }
 
-        //add user to request object
-        req.user = user 
-        next()
-    } catch(err) {
-        err.source = 'jwt middleware error'
-        next(err)
+        // Fetch user from the database
+        const user = await User.findById(req.session.userId);
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
+        }
+
+        // Add user to request object
+        req.user = user;
+        next();
+    } catch (err) {
+        err.source = 'session middleware error';
+        next(err);
     }
-}
+};
 

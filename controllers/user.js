@@ -1,56 +1,87 @@
-const User = require('../models/user.js')
+const User = require('../models/user.js');
 
+// Function to create a new user
 const createUser = async (req, res, next) => {
-    
-    try{
-        // grab all the details from the request
+    try {
         console.log('Request body:', req.body);
-        const { firstName, lastName, username, email, password, } = req.body
-        
+        const { firstName, lastName, username, email, password } = req.body;
 
-        // check if a user with same username and email already exists
+        // Check if a user with the same username or email already exists
+        //console.log('Checking for existing user...');
 
-        const existingUser = await User.findOne({ 
-            $or: [{username}, {email}]
-        })
+        const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+
+        //console.log('Existing user:', existingUser);
 
         if (existingUser) {
-            console.log('User already exists:', existingUser);
-            const error = new Error('User with this username or email already exists');
-            error.statusCode = 409; // Conflict error
-            throw error;
+            //console.log('User with this username or email already exists');
+            return res.status(409).json({ message: 'User with this username or email already exists' });
         }
 
-        // create user object
-        const newUser = new User({
-            firstName,
-            lastName,
-            username,
-            email,
-            password,
-        })
-        // save the data to database
-        console.log('Saving user to database...');
-        try {
-            const createdUser = await newUser.save();
-            res.send({user:User._id})
-        } catch (error) {
-            res.status(400).send(err)
-        }
+        // Create and save the new user
+        //console.log('Creating new user...');
 
-        // return response
-        console.log('User created successfully:', createdUser);
+        const newUser = new User({ firstName, lastName, username, email, password });
+
+        //console.log('Saving new user...');
+
+        const createdUser = await newUser.save();
         
+        //console.log('User created successfully:', createdUser);
+
+        // Send success response
+        //console.log('Sending success response...');
+
         return res.status(201).json({
-            status:true,
+            status: true,
             data: createdUser,
+        });
+    } catch (e) {
+        console.error('Error:', e.message);
+        return res.status(500).json({
+            status: false,
+            message: e.message || 'Internal Server Error',
+        });
+    }
+};
+
+//  //logout user using simple way 
+// const logoutUser = async(req, res) => {
+//     // Since JWT is stateless, logging out is handled on the client side by deleting the token.
+//     // You can optionally add a blacklist token mechanism if need
+//     return res.status(200).json({
+//         message:"Logout successfull"
+//     })
+// }
+
+
+// using seesion logout user
+
+const logoutUser = async(req, res) => {
+    console.log('Session before logout:', req.session);
+    // check if user is logged in
+
+    if(req.session.userId){
+        req.session.destroy((err) => {
+            if(err){
+                console.error('Logout error:', err);
+                return res.status(500).json({
+                    message:"Logout failed"
+                })
+            }
+            return res.status(200).json({
+                message:"Logout successfull"
+            })
+        });  
+        
+    } else{
+        return res.status(400).json({
+            message:"You need to log in first"
         })
-    } catch(e){
-        console.error('Error during signup:', e);
-        next(e)
     }
 }
 
 module.exports = {
-    createUser
-}
+    createUser,
+    logoutUser,
+};

@@ -1,38 +1,41 @@
 const router = require('express').Router()
 const User = require('../models/user.js')
-const jwt = require('jsonwebtoken')
-const { SECRET } = require('../config/config.js')
 
-router.route('/').post(async (req, res, next) => {
+
+const loginUser = async (req, res, next) => {
     try{
         //grab username and password from the user
         const {username, password} = req.body
 
         //check database for user
         const user = await User.findOne({username})
-        const passwordIsValid = user === null ? false : await user.passwordIsValid(password)
+
+        const passwordIsValid = user !== null && await user.passwordIsValid(password);
+
         
         if (!(user && passwordIsValid)){
             return res.status(403).json({
                 message:'Username/ password is incorrect',
             })
         }
-        const userForToken = {
-            username: user.username,
-            id: user._id,
-        }
+        // Create a session
+        req.session.userId = user._id;
+        req.session.username = user.username;
 
-        const validityPeriod = '1h'
-        const token = jwt.sign(userForToken, SECRET, {expiresIn:validityPeriod})
+        console.log('Session:', req.session);  // Debug log
+
 
         res.json({
-            token,
+            message:"Login sucessfull",
             username: user.username,
             name: user.firstName
         })
     } catch(e){
         next(e)
     }
-})
+}
 
-module.exports = router
+
+module.exports = {
+    loginUser
+}

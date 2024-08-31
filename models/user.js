@@ -51,12 +51,15 @@ const UserSchema = new mongoose.Schema(
 
         // hash the password using our new salt
         bcrypt.hash(user.password, 10, (err, hash) => {
-            if(err){
-                return next(err)
-            // override the clear text password with the hashed one
-            user.password = hash
-            next()
+            if (err) {
+                console.error('Error hashing password:', err);
+                return next(err);
             }
+            // Override the clear text password with the hashed one
+        user.password = hash;
+        console.log('Password hashed successfully');
+        next();
+            
         })
     })
     // Compare user inputted password with password in the database

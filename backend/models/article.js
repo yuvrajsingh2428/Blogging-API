@@ -24,6 +24,16 @@ const articleSchema = new mongoose.Schema(
             default:'draft',
             enum:['draft','published'] //enum limits the values in a particular field
         },
+        author: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref:'User',
+            required: true,
+        },
+        state: {
+            type:String,
+            default: 'draft',
+            enum:['draft', 'published']
+        },
         read_count: {
             type:Number,
             default:0,

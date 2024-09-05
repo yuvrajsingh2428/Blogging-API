@@ -52,14 +52,36 @@ const createBlog = async (req, res, next) => {
 
 const getBlogs = async(req, res, next) => {
     try{
+
+         // Initialize filter object for the query
+        const filter = {}; // Only fetch published blogs
+        if (req.query.tags) {
+            filter.tags = { $regex: new RegExp(req.query.tags, 'i') }; // Case-insensitive search
+        }
+        
+        // Get total count of blogs matching the filter
+        const totalResults = await Blog.countDocuments(filter);
+
+        // Fetch blogs based on the filter, fields, and pagination
         const blogs = await Blog
-        .find(req.findFilter)
+        .find(filter)
         .select(req.fields)
         .populate('author', {username: 1})
         .skip(req.pagination.start)
         .limit(req.pagination.sizePerPage)
 
-        const pageInfo = req.pageInfo
+        // Calculate Page information (results, total pages, etc.)
+        const totalPages = Math.ceil(totalResults / req.pagination.sizePerPage)
+        const currentPage = req.pagination.page
+
+
+        const pageInfo = {
+            results: blogs.length,
+            totalPages: totalPages,
+            currentPage: currentPage,
+        }
+
+        // Return the response with blogs and pagination info
 
         return res.json({
             status: true,
@@ -76,6 +98,13 @@ const getBlog = async (req, res, next) => {
     try{
         const{ id } = req.params
         const blog = await Blog.findById(id).populate('author', { username: 1})
+
+        if(!blog){
+            return res.status(401).json({
+                status: false,
+                error:"Blog not found",
+            })
+        }
 
         if(blog.state !== 'published'){
             return res.status(403).json({
